@@ -155,3 +155,52 @@
 (define-private (validate-category (category (string-ascii 50)))
   (and (> (len category) u0) (<= (len category) max-category-length))
 )
+
+;; Public function to donate with earmark
+(define-public (donate-earmarked (amount uint) (category (string-ascii 50)))
+  (begin
+    (asserts! (validate-amount amount) err-invalid-amount)
+    (asserts! (validate-category category) (err u109)) ;; New error code for invalid category
+    (try! (ft-transfer? scholarship-token amount tx-sender (var-get owner)))
+    ;; Update donor's total donation
+    (let ((existing-donation (map-get? donors { donor: tx-sender })))
+      (if (is-some existing-donation)
+        (let (
+          (donation-data (unwrap-panic existing-donation))
+          (new-total (try! (safe-add (get total-donated donation-data) amount)))
+        )
+          (map-set donors 
+            { donor: tx-sender } 
+            { total-donated: new-total }))
+        (map-set donors { donor: tx-sender } { total-donated: amount })))
+    
+    ;; Update earmarked funds
+    (let ((existing-earmark (map-get? earmarked-funds { category: category })))
+      (if (is-some existing-earmark)
+        (let (
+          (earmark-data (unwrap-panic existing-earmark))
+          (new-amount (try! (safe-add (get amount earmark-data) amount)))
+        )
+          (map-set earmarked-funds 
+            { category: category } 
+            { amount: new-amount }))
+        (map-set earmarked-funds { category: category } { amount: amount })))
+    
+    ;; Update donor's earmarks
+    (let ((existing-donor-earmark (map-get? donor-earmarks { donor: tx-sender, category: category })))
+      (if (is-some existing-donor-earmark)
+        (let (
+          (donor-earmark-data (unwrap-panic existing-donor-earmark))
+          (new-amount (try! (safe-add (get amount donor-earmark-data) amount)))
+        )
+          (map-set donor-earmarks 
+            { donor: tx-sender, category: category } 
+            { amount: new-amount }))
+        (map-set donor-earmarks { donor: tx-sender, category: category } { amount: amount })))
+    
+    ;; Update total scholarship fund
+    (let ((new-fund (try! (safe-add (var-get total-scholarship-fund) amount))))
+      (var-set total-scholarship-fund new-fund)
+      (ok true))
+  )
+)
