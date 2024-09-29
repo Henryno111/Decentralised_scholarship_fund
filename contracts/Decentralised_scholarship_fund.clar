@@ -141,3 +141,17 @@
 (define-read-only (get-total-fund)
   (ok (var-get total-scholarship-fund))
 )
+
+;; New constant for maximum category length
+(define-constant max-category-length u50)
+
+;; New data map for earmarked funds
+(define-map earmarked-funds { category: (string-ascii 50) } { amount: uint })
+
+;; New data map for donor earmarks
+(define-map donor-earmarks { donor: principal, category: (string-ascii 50) } { amount: uint })
+
+;; Private function to validate category
+(define-private (validate-category (category (string-ascii 50)))
+  (and (> (len category) u0) (<= (len category) max-category-length))
+)
