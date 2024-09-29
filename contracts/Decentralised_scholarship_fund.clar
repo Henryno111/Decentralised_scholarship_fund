@@ -150,3 +150,8 @@
 
 ;; New data map for donor earmarks
 (define-map donor-earmarks { donor: principal, category: (string-ascii 50) } { amount: uint })
+
+;; Private function to validate category
+(define-private (validate-category (category (string-ascii 50)))
+  (and (> (len category) u0) (<= (len category) max-category-length))
+)
