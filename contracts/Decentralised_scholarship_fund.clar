@@ -212,3 +212,11 @@
     (err err-not-found)
   )
 )
+
+;; Public read-only function to get donor's earmarked amount for a category
+(define-read-only (get-donor-earmarked-amount (donor principal) (category (string-ascii 50)))
+  (match (map-get? donor-earmarks { donor: donor, category: category })
+    earmark (ok (get amount earmark))
+    (err err-not-found)
+  )
+)
