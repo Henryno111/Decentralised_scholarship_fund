@@ -204,3 +204,11 @@
       (ok true))
   )
 )
+
+;; Public read-only function to get earmarked amount for a category
+(define-read-only (get-earmarked-amount (category (string-ascii 50)))
+  (match (map-get? earmarked-funds { category: category })
+    earmark (ok (get amount earmark))
+    (err err-not-found)
+  )
+)
