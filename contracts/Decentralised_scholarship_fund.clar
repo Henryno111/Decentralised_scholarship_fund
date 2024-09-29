@@ -141,3 +141,6 @@
 (define-read-only (get-total-fund)
   (ok (var-get total-scholarship-fund))
 )
+
+;; New constant for maximum category length
+(define-constant max-category-length u50)
