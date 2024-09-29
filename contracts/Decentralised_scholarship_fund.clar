@@ -144,3 +144,9 @@
 
 ;; New constant for maximum category length
 (define-constant max-category-length u50)
+
+;; New data map for earmarked funds
+(define-map earmarked-funds { category: (string-ascii 50) } { amount: uint })
+
+;; New data map for donor earmarks
+(define-map donor-earmarks { donor: principal, category: (string-ascii 50) } { amount: uint })
