@@ -41,3 +41,16 @@
     reason: (string-utf8 500) 
   }
 )
+
+;; Private Functions
+(define-private (is-owner)
+  (is-eq tx-sender (var-get owner))
+)
+
+(define-private (is-valid-round (round-id uint))
+  (is-some (map-get? scholarship-rounds { round-id: round-id }))
+)
+
+(define-private (has-student-applied (student principal))
+  (is-some (map-get? applicants { student: student }))
+)
