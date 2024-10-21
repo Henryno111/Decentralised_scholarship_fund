@@ -123,3 +123,15 @@
     )
   )
 )
+
+(define-read-only (get-scholarship-round (round-id uint))
+  (ok (unwrap! (map-get? scholarship-rounds { round-id: round-id }) err-not-found))
+)
+
+(define-read-only (get-application-score (round-id uint) (student principal))
+  (ok (unwrap! (map-get? application-scores { round-id: round-id, student: student }) err-not-found))
+)
+
+(define-read-only (get-current-round-id)
+  (ok (var-get current-round-id))
+)
