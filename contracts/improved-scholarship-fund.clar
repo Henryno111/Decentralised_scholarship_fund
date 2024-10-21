@@ -75,3 +75,20 @@
     )
   )
 )
+
+(define-public (apply-scholarship-in-round (round-id uint) (amount-requested uint) (reason (string-utf8 500)))
+  (let
+    (
+      (round (unwrap! (map-get? scholarship-rounds { round-id: round-id }) err-not-found))
+    )
+    (asserts! (> amount-requested u0) err-invalid-amount)
+    (asserts! (> (len reason) u0) err-invalid-reason)
+    (asserts! (is-eq (get status round) "active") err-application-closed)
+    (asserts! (<= block-height (get end-date round)) err-past-deadline)
+    (asserts! (is-none (map-get? applicants { student: tx-sender })) err-already-applied)
+    (ok (map-set applicants
+      { student: tx-sender }
+      { status: "pending", amount-requested: amount-requested, reason: reason }
+    ))
+  )
+)
