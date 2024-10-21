@@ -105,3 +105,21 @@
     ))
   )
 )
+
+(define-public (finalize-scholarship-round (round-id uint))
+  (begin
+    (asserts! (is-valid-round round-id) err-invalid-round)
+    (let
+      (
+        (round (unwrap! (map-get? scholarship-rounds { round-id: round-id }) err-not-found))
+      )
+      (asserts! (> block-height (get end-date round)) err-invalid-date)
+      (asserts! (is-eq (get status round) "active") err-application-closed)
+      
+      (ok (map-set scholarship-rounds
+        { round-id: round-id }
+        (merge round { status: "finalized" })
+      ))
+    )
+  )
+)
