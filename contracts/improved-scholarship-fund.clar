@@ -92,3 +92,46 @@
     ))
   )
 )
+
+(define-public (score-application (round-id uint) (student principal) (score uint))
+  (begin
+    (asserts! (is-valid-round round-id) err-invalid-round)
+    (asserts! (and (>= score u0) (<= score u100)) err-invalid-score)
+    (asserts! (has-student-applied student) err-student-not-applied)
+    
+    (ok (map-set application-scores
+      { round-id: round-id, student: student }
+      { score: score }
+    ))
+  )
+)
+
+(define-public (finalize-scholarship-round (round-id uint))
+  (begin
+    (asserts! (is-valid-round round-id) err-invalid-round)
+    (let
+      (
+        (round (unwrap! (map-get? scholarship-rounds { round-id: round-id }) err-not-found))
+      )
+      (asserts! (> block-height (get end-date round)) err-invalid-date)
+      (asserts! (is-eq (get status round) "active") err-application-closed)
+      
+      (ok (map-set scholarship-rounds
+        { round-id: round-id }
+        (merge round { status: "finalized" })
+      ))
+    )
+  )
+)
+
+(define-read-only (get-scholarship-round (round-id uint))
+  (ok (unwrap! (map-get? scholarship-rounds { round-id: round-id }) err-not-found))
+)
+
+(define-read-only (get-application-score (round-id uint) (student principal))
+  (ok (unwrap! (map-get? application-scores { round-id: round-id, student: student }) err-not-found))
+)
+
+(define-read-only (get-current-round-id)
+  (ok (var-get current-round-id))
+)
