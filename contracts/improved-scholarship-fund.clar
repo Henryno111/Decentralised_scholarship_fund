@@ -14,3 +14,30 @@
 (define-constant err-invalid-score (err u112))
 (define-constant err-invalid-round (err u113))
 (define-constant err-student-not-applied (err u114))
+
+;; Variables
+(define-data-var current-round-id uint u0)
+(define-data-var owner principal tx-sender)
+
+;; Data Maps
+(define-map scholarship-rounds 
+  { round-id: uint } 
+  { 
+    start-date: uint, 
+    end-date: uint, 
+    total-fund: uint, 
+    status: (string-ascii 10) 
+  }
+)
+(define-map application-scores 
+  { round-id: uint, student: principal } 
+  { score: uint }
+)
+(define-map applicants 
+  { student: principal } 
+  { 
+    status: (string-ascii 10), 
+    amount-requested: uint, 
+    reason: (string-utf8 500) 
+  }
+)
