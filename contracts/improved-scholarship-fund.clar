@@ -41,3 +41,54 @@
     reason: (string-utf8 500) 
   }
 )
+
+;; Private Functions
+(define-private (is-owner)
+  (is-eq tx-sender (var-get owner))
+)
+
+(define-private (is-valid-round (round-id uint))
+  (is-some (map-get? scholarship-rounds { round-id: round-id }))
+)
+
+(define-private (has-student-applied (student principal))
+  (is-some (map-get? applicants { student: student }))
+)
+
+(define-public (create-scholarship-round (start-date uint) (end-date uint) (initial-fund uint))
+  (begin
+    (asserts! (is-owner) err-not-owner)
+    (asserts! (and (> start-date block-height) (> end-date start-date)) err-invalid-date)
+    (asserts! (> initial-fund u0) err-invalid-amount)
+    (let
+      (
+        (new-round-id (+ (var-get current-round-id) u1))
+      )
+      (try! (stx-transfer? initial-fund tx-sender (as-contract tx-sender)))
+      
+      (map-set scholarship-rounds
+        { round-id: new-round-id }
+        { start-date: start-date, end-date: end-date, total-fund: initial-fund, status: "active" }
+      )
+      (var-set current-round-id new-round-id)
+      (ok new-round-id)
+    )
+  )
+)
+
+(define-public (apply-scholarship-in-round (round-id uint) (amount-requested uint) (reason (string-utf8 500)))
+  (let
+    (
+      (round (unwrap! (map-get? scholarship-rounds { round-id: round-id }) err-not-found))
+    )
+    (asserts! (> amount-requested u0) err-invalid-amount)
+    (asserts! (> (len reason) u0) err-invalid-reason)
+    (asserts! (is-eq (get status round) "active") err-application-closed)
+    (asserts! (<= block-height (get end-date round)) err-past-deadline)
+    (asserts! (is-none (map-get? applicants { student: tx-sender })) err-already-applied)
+    (ok (map-set applicants
+      { student: tx-sender }
+      { status: "pending", amount-requested: amount-requested, reason: reason }
+    ))
+  )
+)
