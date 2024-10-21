@@ -92,3 +92,16 @@
     ))
   )
 )
+
+(define-public (score-application (round-id uint) (student principal) (score uint))
+  (begin
+    (asserts! (is-valid-round round-id) err-invalid-round)
+    (asserts! (and (>= score u0) (<= score u100)) err-invalid-score)
+    (asserts! (has-student-applied student) err-student-not-applied)
+    
+    (ok (map-set application-scores
+      { round-id: round-id, student: student }
+      { score: score }
+    ))
+  )
+)
