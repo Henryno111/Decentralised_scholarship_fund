@@ -54,3 +54,24 @@
 (define-private (has-student-applied (student principal))
   (is-some (map-get? applicants { student: student }))
 )
+
+(define-public (create-scholarship-round (start-date uint) (end-date uint) (initial-fund uint))
+  (begin
+    (asserts! (is-owner) err-not-owner)
+    (asserts! (and (> start-date block-height) (> end-date start-date)) err-invalid-date)
+    (asserts! (> initial-fund u0) err-invalid-amount)
+    (let
+      (
+        (new-round-id (+ (var-get current-round-id) u1))
+      )
+      (try! (stx-transfer? initial-fund tx-sender (as-contract tx-sender)))
+      
+      (map-set scholarship-rounds
+        { round-id: new-round-id }
+        { start-date: start-date, end-date: end-date, total-fund: initial-fund, status: "active" }
+      )
+      (var-set current-round-id new-round-id)
+      (ok new-round-id)
+    )
+  )
+)
